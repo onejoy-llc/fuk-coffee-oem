@@ -189,6 +189,21 @@ function doneHTML({ ref, demo, title, msg, back = 'index.html', backLabel = 'ト
 chrome();
 
 if (page === 'home') {
+  // ヒーロー動画：読み込めたらふわっと表示し、ループの切れ目もフェードでつなぐ
+  const hv = $('.hero-video');
+  if (hv) {
+    const show = () => hv.classList.add('on');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { hv.removeAttribute('autoplay'); hv.pause(); hv.addEventListener('loadeddata', show); }
+    else { hv.addEventListener('playing', show, { once: true }); hv.play().catch(() => hv.addEventListener('loadeddata', show)); }
+    hv.addEventListener('timeupdate', () => {
+      if (!hv.duration) return;
+      hv.classList.toggle('out', hv.currentTime > hv.duration - 0.7 || hv.currentTime < 0.08);
+    });
+    $('.hero').classList.add('ready');
+    // 念のための保険：演出が進まない環境でも、文字と動画は必ず表示する
+    setTimeout(() => $('.hero').classList.add('shown'), 2600);
+    setTimeout(() => { if (hv.classList.contains('on') && getComputedStyle(hv).opacity < 0.5) hv.classList.add('instant'); }, 4200);
+  }
   const sign = n => n === 0 ? '基本料金' : (n > 0 ? '+' : '−') + '¥' + Math.abs(n) + '／袋';
   const tones = ['#a58b6f', '#7a5b45', '#b0734a', '#4a3a31'];
   const short = { 'fuk-blend': 'FUKのブレンド', 'fuk-single': 'シングルオリジン', bring: '豆の持ち込み', original: 'オリジナル開発' };
