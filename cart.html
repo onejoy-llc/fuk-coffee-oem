@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>カート｜FUK COFFEE ONLINE SHOP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="cart">
+<main>
+
+<section class="ph"><div class="wrap">
+  <p class="crumb">ONLINE SHOP / CART</p>
+  <h1>Cart</h1>
+</div></section>
+<div class="wrap" id="cartRoot">
+  <div class="cart-grid">
+    <div>
+      <div id="cartList"></div>
+      <form class="form" id="orderForm">
+        <h2>Delivery</h2><p style="font-size:13px;color:var(--mute)">お届け先</p>
+        <div class="fr">
+          <label class="fld"><span>お名前<i>必須</i></span><input name="name" required autocomplete="name"></label>
+          <label class="fld"><span>電話番号<i>必須</i></span><input name="tel" type="tel" required autocomplete="tel"></label>
+        </div>
+        <label class="fld"><span>メールアドレス<i>必須</i></span><input name="email" type="email" required autocomplete="email"></label>
+        <div class="fr">
+          <label class="fld"><span>郵便番号<i>必須</i></span><input name="zip" required autocomplete="postal-code" placeholder="810-0000"></label>
+          <label class="fld"><span>都道府県<i>必須</i></span><input name="pref" required autocomplete="address-level1"></label>
+        </div>
+        <label class="fld"><span>住所<i>必須</i></span><input name="address" required autocomplete="street-address"></label>
+        <h2>Payment</h2><p style="font-size:13px;color:var(--mute)">お支払い方法</p>
+        <div class="opts c2">
+          <label class="opt"><input type="radio" name="pay" value="card" checked><div><b>クレジットカード</b><small>注文確定後、決済ページへ進みます（準備中）</small></div></label>
+          <label class="opt"><input type="radio" name="pay" value="bank"><div><b>銀行振込</b><small>ご入金の確認後に発送します</small></div></label>
+        </div>
+        <label class="fld"><span>備考</span><textarea name="note" placeholder="ギフト包装のご希望など"></textarea></label>
+      </form>
+    </div>
+    <aside class="sum">
+      <h2>ORDER SUMMARY</h2>
+      <dl id="sumBox"></dl>
+      <p class="note" id="shipNote"></p>
+      <button class="btn full" id="orderBtn" form="orderForm">注文を確定する <span class="arr">→</span></button>
+      <p class="err" id="orderErr"></p>
+      <p class="note">※ 送料は仮の設定です。</p>
+    </aside>
+  </div>
+</div>
+
+</main>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

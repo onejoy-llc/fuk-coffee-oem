@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OEMの見積・注文｜FUK COFFEE ROASTERY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="oem">
+<main>
+
+<section class="ph"><div class="wrap">
+  <p class="crumb">DRIP BAG OEM / CHECK-IN</p>
+  <h1>OEM order</h1>
+  <p>豆・形・ロットを選ぶと、その場で概算の金額が出ます。そのまま見積・注文の依頼まで進めます。</p>
+</div></section>
+<div class="wrap" id="oemRoot">
+  <div class="oem-grid">
+    <form class="form" id="oemForm" novalidate>
+      <span class="step-k" style="margin-top:36px">STEP 01</span><h2 style="border:0;margin-top:0;padding-top:0">Beans</h2><p>どの豆を使いますか？</p>
+      <div class="opts c2" id="optBeans"></div>
+
+      <span class="step-k" style="margin-top:44px;padding-top:28px;border-top:1px solid var(--ink)">STEP 02</span><h2 style="border:0;margin-top:0;padding-top:0">Package</h2><p>袋の色と、デザインの入れ方を選んでください。</p>
+      <div class="opts c3" id="optColors"></div>
+      <div class="opts c3" id="optPacks"></div>
+      <div class="fr">
+        <label class="fld"><span>袋に入れる名前（プレビュー用）</span><input id="brand" maxlength="24" placeholder="例：YOUR SHOP" autocomplete="off"></label>
+        <div class="fld"><span>1袋の内容量</span><div class="opts c2" id="optGrams" style="margin-top:0"></div></div>
+      </div>
+
+      <span class="step-k" style="margin-top:44px;padding-top:28px;border-top:1px solid var(--ink)">STEP 03</span><h2 style="border:0;margin-top:0;padding-top:0">Lot</h2><p>何袋つくりますか？</p>
+      <div class="opts c5" id="optLots"></div>
+      <p class="note">これより多い数量や、複数種類のご注文は、備考欄にご記入ください。</p>
+
+      <span class="step-k" style="margin-top:44px;padding-top:28px;border-top:1px solid var(--ink)">STEP 04</span><h2 style="border:0;margin-top:0;padding-top:0">Your info</h2><p>ご連絡先を教えてください。</p>
+      <div class="fr">
+        <label class="fld"><span>会社名・店舗名<i>必須</i></span><input name="company" required autocomplete="organization"></label>
+        <label class="fld"><span>ご担当者名<i>必須</i></span><input name="name" required autocomplete="name"></label>
+      </div>
+      <div class="fr">
+        <label class="fld"><span>メールアドレス<i>必須</i></span><input name="email" type="email" required autocomplete="email"></label>
+        <label class="fld"><span>電話番号</span><input name="tel" type="tel" autocomplete="tel"></label>
+      </div>
+      <div class="fr">
+        <label class="fld"><span>業種</span><select name="biz"><option>コーヒーショップ・ロースター</option><option>ホテル・旅館</option><option>企業・オフィス</option><option>ブライダル・イベント</option><option>その他</option></select></label>
+        <label class="fld"><span>ご希望の納期</span><input name="due" type="date"></label>
+      </div>
+      <div class="fld"><span>ご依頼の種類</span>
+        <div class="opts c2" style="margin-top:0">
+          <label class="opt"><input type="radio" name="kind" value="estimate" checked><div><b>まずは見積がほしい</b><small>正式な金額と納期を確認したい</small></div></label>
+          <label class="opt"><input type="radio" name="kind" value="order"><div><b>この内容で注文したい</b><small>サンプル確認へ進みたい</small></div></label>
+        </div>
+      </div>
+      <label class="fld"><span>備考・ご質問</span><textarea name="note" placeholder="味のイメージ、用途、デザインについてなど"></textarea></label>
+    </form>
+
+    <aside class="pass">
+      <div class="pass-top"><span>BOARDING PASS</span><span>FUK ✈ YOU</span></div>
+      <div class="pass-prev" id="prev"></div>
+      <div class="pass-body">
+        <dl id="passList"></dl>
+        <button class="btn full" form="oemForm" id="oemBtn">この内容で送信する <span class="arr">→</span></button>
+        <p class="err" id="oemErr"></p>
+        <p class="note">※ 金額は仮の概算（税別・送料別）です。正式な見積は送信後にご案内します。</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+</main>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/oem.js"></script>
+</body>
+</html>
