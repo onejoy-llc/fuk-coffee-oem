@@ -58,12 +58,12 @@ function cardHTML(p) {
     : `<button class="btn sm ghost" data-add="${p.id}">カートに入れる</button>`;
   return `<article class="card rv">
     <a class="card-img" href="product.html?id=${p.id}">
-      ${p.soon ? '<span class="badge">COMING SOON</span>' : ''}
+      ${p.soon ? '<span class="badge">準備中</span>' : ''}
       ${visual(p)}
     </a>
     <div class="card-body">
-      <h3><a href="product.html?id=${p.id}">${esc(p.name)}</a></h3>
-      <p class="jp">${esc(p.jp)}</p>
+      <h3><a href="product.html?id=${p.id}">${esc(p.jp)}</a></h3>
+      <p class="jp">${esc(p.name)}</p>
       <p class="lead">${esc(p.lead)}</p>
       <div class="tags">${(p.tags || []).map(t => `<span>${esc(t)}</span>`).join('')}</div>
       <div class="card-foot">
@@ -77,7 +77,7 @@ function lineupHTML(d) {
   return `<article class="card rv">
     <div class="card-img cut">
       <span class="gate">GATE ${d.gate}</span>
-      ${d.soon ? '<span class="badge">COMING SOON</span>' : ''}
+      ${d.soon ? '<span class="badge">準備中</span>' : ''}
       <img src="${d.img}" alt="${esc(d.name)}" loading="lazy">
     </div>
     <div class="card-body">
@@ -94,15 +94,16 @@ function chrome() {
   const on = k => page === k ? 'class="on"' : '';
   document.body.insertAdjacentHTML('afterbegin', `
   <header class="hd"><div class="hd-in">
-    <a class="logo" href="index.html">FUK COFFEE<small>ROASTERY ✈ OEM</small></a>
+    <a class="logo" href="index.html">FUK COFFEE<small>DRIP BAG OEM</small></a>
     <button class="menu-btn" aria-label="メニュー"><span></span><span></span></button>
     <nav class="nav">
-      <a href="index.html#oem" ${on('home')}>OEM</a>
-      <a href="index.html#price">PRICE</a>
-      <a href="index.html#flow">FLOW</a>
-      <a href="shop.html" ${on('shop')}>ONLINE SHOP</a>
-      <a class="cart-link" href="cart.html" aria-label="カート">CART <span class="cart-n" data-n="0">0</span></a>
-      <a class="btn sm" href="oem-order.html">OEMの見積・注文</a>
+      <a href="index.html#oem" ${on('home')}>OEM製造</a>
+      <a href="index.html#choose">選べる内容</a>
+      <a href="index.html#price">料金</a>
+      <a href="index.html#flow">ご注文の流れ</a>
+      <a href="shop.html" ${on('shop')}>オンラインショップ</a>
+      <a class="cart-link" href="cart.html" aria-label="カート">カート <span class="cart-n" data-n="0">0</span></a>
+      <a class="btn sm" href="oem-order.html">お見積り・ご注文</a>
     </nav>
   </div></header>`);
   document.body.insertAdjacentHTML('beforeend', `
@@ -128,7 +129,7 @@ function chrome() {
     <p class="ft-note">※ 掲載している写真は、すべて仮のイメージ画像です。実際の商品とは異なります。</p>
     <div class="ft-bottom"><span>© 3LETTER Co.,Ltd.</span><span>FUK ✈ NGS ✈ OSA　<a href="admin.html" style="text-decoration:underline">ADMIN</a></span></div>
   </div></footer>
-  <div class="toast" role="status"><span></span><a href="cart.html">CART →</a></div>`);
+  <div class="toast" role="status"><span></span><a href="cart.html">カートを見る</a></div>`);
   $('.menu-btn').onclick = () => $('.nav').classList.toggle('open');
   updateCartCount();
 }
@@ -146,7 +147,7 @@ document.addEventListener('click', e => {
   if (!b) return;
   const p = findP(b.dataset.add);
   cart.add(p.id, Number(b.dataset.qty || 1), b.dataset.opt || '');
-  toast(`「${p.name}」をカートに入れました`);
+  toast('カートに入れました');
 });
 
 /* ---------- OEMの金額計算（見積フォームとLPで共用） ---------- */
@@ -178,7 +179,7 @@ function doneHTML({ ref, demo, title, msg, back = 'index.html', backLabel = 'ト
     <div class="done-top"><span>BOARDING PASS</span><span>FUK ✈ YOU</span></div>
     <div class="done-body">
       <h1>${title}</h1><p>${msg}</p>
-      <div class="ref">${ref}</div><p style="margin-top:0;font-size:12px;color:var(--mute)">受付番号（お問い合わせの際にお伝えください）</p>
+      <div class="ref">${ref}</div><p style="margin-top:4px;font-size:12px;color:var(--mute)">受付番号（お問い合わせの際にお伝えください）</p>
       <a class="btn" href="${back}">${backLabel} <span class="arr">→</span></a>
       ${demo ? '<p class="demo-note">※ いまはデモモードです。内容はこのブラウザ内に保存されただけで、メール送信や決済は行われていません。</p>' : ''}
     </div></div></div>`;
@@ -188,18 +189,27 @@ function doneHTML({ ref, demo, title, msg, back = 'index.html', backLabel = 'ト
 chrome();
 
 if (page === 'home') {
-  // 料金ボード
+  const sign = n => n === 0 ? '基本料金' : (n > 0 ? '+' : '−') + '¥' + Math.abs(n) + '／袋';
+  const tones = ['#a58b6f', '#7a5b45', '#b0734a', '#4a3a31'];
+  const short = { 'fuk-blend': 'FUKのブレンド', 'fuk-single': 'シングルオリジン', bring: '豆の持ち込み', original: 'オリジナル開発' };
+  const swatch = { white: '#fafaf7', black: '#151514', kraft: '#c9a97c' };
+  $('#pickBeans').innerHTML = OEM.beans.map((b, i) => `<div class="pick">
+    <div class="tile" style="background:${tones[i % tones.length]}">${short[b.id] || esc(b.label)}</div>
+    <h3>${esc(b.label)}</h3><p>${esc(b.note)}</p>
+    <span class="p">${sign(b.add)}${b.setup ? '・初期費用 ' + yen(b.setup) : ''}</span></div>`).join('');
+  $('#pickPacks').innerHTML = OEM.packs.map(k => `<div class="pick">
+    <img src="assets/img/pack-${k.id}.jpg" alt="${esc(k.label)}" loading="lazy" onerror="this.remove()">
+    <h3>${esc(k.label)}</h3><p>${esc(k.note)}</p>
+    <span class="p">${sign(k.add)}${k.setup ? '・初期費用 ' + yen(k.setup) : ''}</span></div>`).join('');
+  $('#pickColors').innerHTML = '<b>袋の色：</b>' + OEM.colors.map(c => `<span><i class="sw" style="background:${swatch[c.id] || '#ddd'}"></i>${esc(c.label)}</span>`).join('');
   $('#boardRows').innerHTML = OEM.lots.map((l, i) => `<tr>
     <td class="big">${l.qty.toLocaleString()}<small>袋</small></td>
-    <td class="big">${yen(l.unit)}<small>/袋〜</small></td>
+    <td class="big">${yen(l.unit)}<small>〜</small></td>
     <td class="hide-sp">${yen(l.unit * l.qty)}〜</td>
-    <td>${i === 0 ? '<span class="st">小ロット</span>' : i === OEM.lots.length - 1 ? '<span class="st">最安単価</span>' : 'ON TIME'}</td></tr>`).join('');
+    <td>${i === 0 ? '<span class="st">小ロット</span>' : i === OEM.lots.length - 1 ? '<span class="st">いちばんお得</span>' : ''}</td></tr>`).join('');
   $$('[data-min-lot]').forEach(e => e.textContent = OEM.lots[0].qty);
   $$('[data-min-unit]').forEach(e => e.textContent = OEM.lots.at(-1).unit);
   $$('[data-lead]').forEach(e => e.textContent = OEM.leadTime);
-  $('#choiceBeans').innerHTML = OEM.beans.map(b => `<li><span>${b.label}</span><span>${b.code}</span></li>`).join('');
-  $('#choicePack').innerHTML = OEM.packs.map(k => `<li><span>${k.label}</span><span>${k.min.toLocaleString()}袋〜</span></li>`).join('');
-  $('#choiceLot').innerHTML = OEM.lots.map(l => `<li><span>${l.qty.toLocaleString()}袋</span><span>${yen(l.unit)}/袋〜</span></li>`).join('');
   $('#lineupGrid').innerHTML = DRIPBAGS.map(lineupHTML).join('');
   $('#sampleGrid').innerHTML = SHOP.filter(p => (p.tags || []).includes('ドリップバッグ')).map(cardHTML).join('');
 }
@@ -207,7 +217,7 @@ if (page === 'home') {
 if (page === 'shop') {
   let cat = new URLSearchParams(location.search).get('cat') || 'all';
   const draw = () => {
-    $('#filters').innerHTML = CATEGORIES.map(c => `<button class="chip ${c.id === cat ? 'on' : ''}" data-cat="${c.id}">${c.label}<small>${c.jp}</small></button>`).join('');
+    $('#filters').innerHTML = CATEGORIES.map(c => `<button class="chip ${c.id === cat ? 'on' : ''}" data-cat="${c.id}">${c.jp}</button>`).join('');
     $('#shopGrid').innerHTML = SHOP.filter(p => cat === 'all' || p.cat === cat).map(cardHTML).join('') || '<p style="color:var(--mute)">このカテゴリの商品は準備中です。</p>';
     reveal();
   };
@@ -217,25 +227,25 @@ if (page === 'shop') {
 
 if (page === 'product') {
   const p = findP(new URLSearchParams(location.search).get('id')) || SHOP[0];
-  document.title = `${p.name}｜FUK COFFEE ONLINE SHOP`;
+  document.title = `${p.jp}｜FUK COFFEE オンラインショップ`;
   const opts = p.options || [];
-  const catLabel = (CATEGORIES.find(c => c.id === p.cat) || {}).label || '';
+  const catLabel = (CATEGORIES.find(c => c.id === p.cat) || {}).jp || '';
   let q = 1;
   $('#pd').innerHTML = `
     <div class="pd-img">${visual(p)}</div>
     <div>
-      <p class="mono" style="font-size:11px;color:var(--mute)"><a href="shop.html">ONLINE SHOP</a> / <a href="shop.html?cat=${p.cat}">${catLabel}</a></p>
-      <h1>${esc(p.name)}</h1><p class="jp">${esc(p.jp)}｜${esc(p.unit)}</p>
+      <p class="crumbs"><a href="shop.html">オンラインショップ</a> ／ <a href="shop.html?cat=${p.cat}">${catLabel}</a></p>
+      <h1>${esc(p.jp)}</h1><p class="jp">${esc(p.name)}</p>
       <p class="lead">${esc(p.lead)}</p><p class="desc">${esc(p.desc)}</p>
       <div class="tags">${(p.tags || []).map(t => `<span>${esc(t)}</span>`).join('')}</div>
-      <span class="price">${yen(p.price)}<small>税込</small></span>
+      <span class="price">${yen(p.price)}<small>税込｜${esc(p.unit)}</small></span>
       ${opts.length ? `<label class="fld" style="margin:0 0 14px"><span>種類を選ぶ</span><select id="opt">${opts.map(o => `<option>${esc(o)}</option>`).join('')}</select></label>` : ''}
       <div class="buy">
         <div class="qty"><button data-q="-1" aria-label="減らす">−</button><span id="q">1</span><button data-q="1" aria-label="増やす">＋</button></div>
-        <button class="btn" id="addBtn" data-add="${p.id}" data-qty="1" data-opt="${esc(opts[0] || '')}" ${p.soon ? 'disabled' : ''}>${p.soon ? '準備中です' : 'カートに入れる'} <span class="arr">→</span></button>
+        <button class="btn accent" id="addBtn" data-add="${p.id}" data-qty="1" data-opt="${esc(opts[0] || '')}" ${p.soon ? 'disabled' : ''}>${p.soon ? '準備中です' : 'カートに入れる'} <span class="arr">→</span></button>
       </div>
       ${(p.spec || []).length ? `<dl class="spec">${p.spec.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
-      ${['coffee', 'gift'].includes(p.cat) ? `<div class="oem-hook"><div><b>この味を、あなたの店の名前で。</b><span>ドリップバッグのOEM製造を${OEM.lots[0].qty}袋から承ります。</span></div><a class="btn light sm" href="oem-order.html">OEMの見積へ <span class="arr">→</span></a></div>` : ''}
+      ${['coffee', 'gift'].includes(p.cat) ? `<div class="oem-hook"><div><b>このコーヒーを、あなたのお店の名前で。</b><span>ドリップバッグのOEM製造を${OEM.lots[0].qty}袋から承ります。</span></div><a class="btn light sm" href="oem-order.html">OEMの見積へ <span class="arr">→</span></a></div>` : ''}
     </div>`;
   $('#pd').addEventListener('click', e => {
     const b = e.target.closest('[data-q]'); if (!b) return;
@@ -258,7 +268,7 @@ if (page === 'cart') {
     $('#cartList').innerHTML = items.map(i => {
       const p = findP(i.id), k = esc(keyOf(i));
       return `<div class="ci"><a class="ci-img" href="product.html?id=${p.id}">${visual(p)}</a>
-        <div><h3>${esc(p.name)}</h3><p class="jp">${i.opt ? esc(i.opt) + '｜' : ''}${esc(p.unit)}｜${yen(p.price)}</p></div>
+        <div><h3>${esc(p.jp)}</h3><p class="jp">${i.opt ? esc(i.opt) + '｜' : ''}${esc(p.unit)}｜${yen(p.price)}</p></div>
         <div class="ci-r"><div class="qty sm"><button data-id="${k}" data-d="-1" aria-label="減らす">−</button><span>${i.qty}</span><button data-id="${k}" data-d="1" aria-label="増やす">＋</button></div>
           <span class="price" style="font-size:22px">${yen(p.price * i.qty)}</span><button class="rm" data-id="${k}" data-d="x">削除</button></div></div>`;
     }).join('');
@@ -281,7 +291,7 @@ if (page === 'cart') {
     try {
       const r = await submitData('order', { customer: f, items: cart.items().map(i => ({ ...i, name: findP(i.id).jp, price: findP(i.id).price })), totals: cart.totals() });
       cart.save([]);
-      $('main').innerHTML = doneHTML({ ...r, title: 'Thank you', msg: 'ご注文を受け付けました。確認のご連絡をお送りします。<br>コーヒーの旅を、どうぞお楽しみください。', back: 'shop.html', backLabel: 'ショップへ戻る' });
+      $('main').innerHTML = doneHTML({ ...r, title: 'ご注文ありがとうございます', msg: 'ご注文を受け付けました。確認のご連絡をお送りします。', back: 'shop.html', backLabel: 'ショップへ戻る' });
       scrollTo(0, 0);
     } catch (err) { btn.disabled = false; $('#orderErr').textContent = err.message; $('#orderErr').classList.add('on'); }
   });

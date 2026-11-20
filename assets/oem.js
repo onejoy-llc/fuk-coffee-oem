@@ -1,7 +1,7 @@
 /* OEM 見積・注文フォーム */
 (() => {
   const state = { bean: OEM.beans[0].id, gram: OEM.grams[0].id, color: 'white', pack: 'label', lot: 300, brand: '' };
-  const sign = n => n === 0 ? '基本料金' : (n > 0 ? '+' : '−') + '¥' + Math.abs(n) + '/袋';
+  const sign = n => n === 0 ? '基本料金' : (n > 0 ? '+' : '−') + '¥' + Math.abs(n) + '／袋';
   const setup = n => n ? `　初期費用 ${yen(n)}` : '';
   const swatch = { white: '#fafaf7', black: '#151514', kraft: '#c9a97c' };
 
@@ -35,13 +35,13 @@
     });
     if (state.pack === 'plain') $$('#prev .bag-top, #prev .bag-bar, #prev .bag-foot').forEach(e => e.style.visibility = 'hidden');
     $('#passList').innerHTML = `
-      <div><dt>BEANS</dt><dd>${c.b.label}</dd></div>
-      <div><dt>PACKAGE</dt><dd>${OEM.colors.find(x => x.id === state.color).label}・${c.k.label}・${c.g.label}</dd></div>
-      <div><dt>LOT</dt><dd>${state.lot.toLocaleString()}袋</dd></div>
-      <div><dt>LEAD TIME</dt><dd>${OEM.leadTime}</dd></div>
-      <div class="unit"><dt>UNIT</dt><dd>${yen(c.unit)} × ${state.lot.toLocaleString()}袋 ＝ ${yen(c.goods)}</dd></div>
-      ${c.setup ? `<div><dt>SETUP</dt><dd>初期費用 ${yen(c.setup)}</dd></div>` : ''}
-      <div class="total"><dt>TOTAL</dt><dd>${yen(c.total)}<small>税別・概算</small></dd></div>`;
+      <div><dt>コーヒー豆</dt><dd>${c.b.label}</dd></div>
+      <div><dt>パッケージ</dt><dd>${OEM.colors.find(x => x.id === state.color).label}・${c.k.label}・${c.g.label}</dd></div>
+      <div><dt>数量</dt><dd>${state.lot.toLocaleString()}袋</dd></div>
+      <div><dt>納期の目安</dt><dd>${OEM.leadTime}</dd></div>
+      <div class="unit"><dt>商品代</dt><dd>${yen(c.unit)} × ${state.lot.toLocaleString()}袋 ＝ ${yen(c.goods)}</dd></div>
+      ${c.setup ? `<div><dt>初期費用</dt><dd>${yen(c.setup)}</dd></div>` : ''}
+      <div class="total"><dt>概算の合計</dt><dd>${yen(c.total)}<small>税別・送料別</small></dd></div>`;
   }
 
   $('#oemForm').addEventListener('change', e => {
@@ -68,7 +68,7 @@
         spec: { ...state }, estimate: { unit: c.unit, setup: c.setup, total: c.total }
       });
       $('main').innerHTML = doneHTML({
-        ...r, title: 'Checked in',
+        ...r, title: '受け付けました',
         msg: `${f.kind === 'order' ? 'ご注文の依頼' : '見積の依頼'}を受け付けました。内容を確認のうえ、担当者よりメールでご連絡します。`
       });
       scrollTo(0, 0);
