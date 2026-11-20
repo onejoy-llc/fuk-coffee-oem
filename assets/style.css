@@ -391,3 +391,8 @@ button { cursor: pointer; background: none; border: 0; }
 .cta.photo-bg .btn:hover { background: #fff; color: var(--ink); border-color: #fff; }
 .ft-note { font-size: 11px; color: #ffffff55; margin-top: 14px; }
 @media (max-width: 760px) { .scenes { grid-template-columns: 1fr; gap: 16px; margin-top: 36px; } .photo.wide img { aspect-ratio: 3 / 2; } .photo.wide { margin-bottom: 44px; } .cta.photo-bg { padding: 80px 0; } }
+
+.card-img.cut img { width: 62%; height: auto; object-fit: contain; filter: drop-shadow(0 22px 24px #00000033); }
+.card:hover .card-img.cut img { transform: translateY(-8px) rotate(-2deg) scale(1.03); }
+.sub-hd { font-family: var(--en); font-weight: 700; font-size: 30px; letter-spacing: .04em; margin: 72px 0 6px; padding-top: 28px; border-top: 1px solid var(--ink); }
+.sub-hd + p { margin-bottom: 28px; font-weight: 500; }

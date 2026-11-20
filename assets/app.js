@@ -12,19 +12,22 @@ const store = {
 };
 
 /* ---------- カート ---------- */
+const SHOP = PRODUCTS.filter(p => !p.hidden);               // 公開中の商品
+const findP = id => SHOP.find(p => p.id === id);
+const keyOf = i => i.id + '::' + (i.opt || '');
 const cart = {
-  items: () => store.get('fuk_cart', []).filter(i => PRODUCTS.some(p => p.id === i.id)),
+  items: () => store.get('fuk_cart', []).filter(i => findP(i.id)),
   save(items) { store.set('fuk_cart', items); updateCartCount(); },
-  add(id, qty = 1) {
+  add(id, qty = 1, opt = '') {
     const items = cart.items();
-    const hit = items.find(i => i.id === id);
-    hit ? hit.qty = Math.min(99, hit.qty + qty) : items.push({ id, qty });
+    const hit = items.find(i => keyOf(i) === keyOf({ id, opt }));
+    hit ? hit.qty = Math.min(99, hit.qty + qty) : items.push({ id, opt, qty });
     cart.save(items);
   },
-  setQty(id, qty) { cart.save(cart.items().map(i => i.id === id ? { ...i, qty } : i).filter(i => i.qty > 0)); },
+  setQty(key, qty) { cart.save(cart.items().map(i => keyOf(i) === key ? { ...i, qty } : i).filter(i => i.qty > 0)); },
   count: () => cart.items().reduce((s, i) => s + i.qty, 0),
   totals() {
-    const sub = cart.items().reduce((s, i) => s + PRODUCTS.find(p => p.id === i.id).price * i.qty, 0);
+    const sub = cart.items().reduce((s, i) => s + findP(i.id).price * i.qty, 0);
     const ship = sub === 0 || sub >= SHIPPING.freeOver ? 0 : SHIPPING.fee;
     return { sub, ship, total: sub + ship };
   }
@@ -46,13 +49,15 @@ function bagHTML({ tone = 'white', gate = '01', name = 'FUK COFFEE', sub = 'DRIP
   </div>`;
 }
 function visual(p) {
-  if (p.img) return `<img src="${p.img}" alt="${esc(p.jp)}" loading="lazy">`;
-  return `<div class="pv ${p.visual}"><div class="lbl"><b>FUK</b><i>COFFEE</i><u></u><s>${esc(p.code)}</s></div></div>`;
+  return `<img src="${esc(p.img)}" alt="${esc(p.jp)}" loading="lazy">`;
 }
 function cardHTML(p) {
+  const hasOpt = (p.options || []).length > 0;
+  const btn = p.soon ? '<button class="btn sm" disabled>準備中</button>'
+    : hasOpt ? `<a class="btn sm ghost" href="product.html?id=${p.id}">種類を選ぶ</a>`
+    : `<button class="btn sm ghost" data-add="${p.id}">カートに入れる</button>`;
   return `<article class="card rv">
     <a class="card-img" href="product.html?id=${p.id}">
-      ${p.gate ? `<span class="gate">GATE ${p.gate}</span>` : ''}
       ${p.soon ? '<span class="badge">COMING SOON</span>' : ''}
       ${visual(p)}
     </a>
@@ -62,9 +67,24 @@ function cardHTML(p) {
       <p class="lead">${esc(p.lead)}</p>
       <div class="tags">${(p.tags || []).map(t => `<span>${esc(t)}</span>`).join('')}</div>
       <div class="card-foot">
-        <span class="price">${yen(p.price)}<small>税込${p.provisional ? '・仮' : ''}</small></span>
-        <button class="btn sm ${p.soon ? '' : 'ghost'}" data-add="${p.id}" ${p.soon ? 'disabled' : ''}>${p.soon ? '準備中' : 'カートに入れる'}</button>
+        <span class="price">${yen(p.price)}<small>税込</small></span>
+        ${btn}
       </div>
+    </div>
+  </article>`;
+}
+function lineupHTML(d) {
+  return `<article class="card rv">
+    <div class="card-img cut">
+      <span class="gate">GATE ${d.gate}</span>
+      ${d.soon ? '<span class="badge">COMING SOON</span>' : ''}
+      <img src="${d.img}" alt="${esc(d.name)}" loading="lazy">
+    </div>
+    <div class="card-body">
+      <h3>${esc(d.name)}</h3>
+      <p class="jp">${esc(d.roast)}</p>
+      <p class="lead">${esc(d.desc)}</p>
+      <div class="tags">${d.tags.map(t => `<span>${esc(t)}</span>`).join('')}</div>
     </div>
   </article>`;
 }
@@ -97,16 +117,16 @@ function chrome() {
         <li><a href="index.html#flow">ご注文の流れ</a></li>
         <li><a href="oem-order.html">見積・注文フォーム</a></li></ul></div>
       <div><h4>ONLINE SHOP</h4><ul>
-        <li><a href="shop.html?cat=dripbag">ドリップバッグ</a></li>
-        <li><a href="shop.html?cat=beans">コーヒー豆</a></li>
+        <li><a href="shop.html?cat=coffee">コーヒー豆</a></li>
         <li><a href="shop.html?cat=gift">ギフト</a></li>
+        <li><a href="shop.html?cat=goods">グッズ・アパレル</a></li>
         <li><a href="cart.html">カート</a></li></ul></div>
       <div><h4>SHOPS</h4><ul>
         <li>FUK COFFEE／Parks／Seaside</li><li>FUK COFFEE BASE／ROASTERY</li>
         <li>NGS COFFEE</li><li>OSA COFFEE／Minami／Parks</li><li>CAFE HAPJE</li></ul></div>
     </div>
     <p class="ft-note">※ 掲載している写真は、すべて仮のイメージ画像です。実際の商品とは異なります。</p>
-    <div class="ft-bottom"><span>© 3LETTER Co.,Ltd.</span><span>FUK ✈ NGS ✈ OSA</span></div>
+    <div class="ft-bottom"><span>© 3LETTER Co.,Ltd.</span><span>FUK ✈ NGS ✈ OSA　<a href="admin.html" style="text-decoration:underline">ADMIN</a></span></div>
   </div></footer>
   <div class="toast" role="status"><span></span><a href="cart.html">CART →</a></div>`);
   $('.menu-btn').onclick = () => $('.nav').classList.toggle('open');
@@ -124,8 +144,8 @@ function reveal() {
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-add]');
   if (!b) return;
-  const p = PRODUCTS.find(x => x.id === b.dataset.add);
-  cart.add(p.id, Number(b.dataset.qty || 1));
+  const p = findP(b.dataset.add);
+  cart.add(p.id, Number(b.dataset.qty || 1), b.dataset.opt || '');
   toast(`「${p.name}」をカートに入れました`);
 });
 
@@ -142,7 +162,7 @@ function oemCalc({ bean, gram, pack, lot }) {
 /* ---------- 送信（デモモード対応） ---------- */
 async function submitData(kind, data) {
   const ref = (kind === 'oem' ? 'OEM' : 'FUK') + '-' + Date.now().toString(36).toUpperCase().slice(-6);
-  const record = { ref, at: new Date().toISOString(), ...data };
+  const record = { ref, at: new Date().toISOString(), status: '新規', ...data };
   const url = ENDPOINT[kind];
   if (url) {
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(record) });
@@ -180,14 +200,15 @@ if (page === 'home') {
   $('#choiceBeans').innerHTML = OEM.beans.map(b => `<li><span>${b.label}</span><span>${b.code}</span></li>`).join('');
   $('#choicePack').innerHTML = OEM.packs.map(k => `<li><span>${k.label}</span><span>${k.min.toLocaleString()}袋〜</span></li>`).join('');
   $('#choiceLot').innerHTML = OEM.lots.map(l => `<li><span>${l.qty.toLocaleString()}袋</span><span>${yen(l.unit)}/袋〜</span></li>`).join('');
-  $('#sampleGrid').innerHTML = PRODUCTS.filter(p => p.cat === 'dripbag' && !p.soon).map(cardHTML).join('');
+  $('#lineupGrid').innerHTML = DRIPBAGS.map(lineupHTML).join('');
+  $('#sampleGrid').innerHTML = SHOP.filter(p => (p.tags || []).includes('ドリップバッグ')).map(cardHTML).join('');
 }
 
 if (page === 'shop') {
   let cat = new URLSearchParams(location.search).get('cat') || 'all';
   const draw = () => {
     $('#filters').innerHTML = CATEGORIES.map(c => `<button class="chip ${c.id === cat ? 'on' : ''}" data-cat="${c.id}">${c.label}<small>${c.jp}</small></button>`).join('');
-    $('#shopGrid').innerHTML = PRODUCTS.filter(p => cat === 'all' || p.cat === cat).map(cardHTML).join('');
+    $('#shopGrid').innerHTML = SHOP.filter(p => cat === 'all' || p.cat === cat).map(cardHTML).join('') || '<p style="color:var(--mute)">このカテゴリの商品は準備中です。</p>';
     reveal();
   };
   $('#filters').onclick = e => { const b = e.target.closest('[data-cat]'); if (b) { cat = b.dataset.cat; history.replaceState(null, '', cat === 'all' ? 'shop.html' : '?cat=' + cat); draw(); } };
@@ -195,30 +216,34 @@ if (page === 'shop') {
 }
 
 if (page === 'product') {
-  const p = PRODUCTS.find(x => x.id === new URLSearchParams(location.search).get('id')) || PRODUCTS[0];
+  const p = findP(new URLSearchParams(location.search).get('id')) || SHOP[0];
   document.title = `${p.name}｜FUK COFFEE ONLINE SHOP`;
+  const opts = p.options || [];
+  const catLabel = (CATEGORIES.find(c => c.id === p.cat) || {}).label || '';
   let q = 1;
   $('#pd').innerHTML = `
     <div class="pd-img">${visual(p)}</div>
     <div>
-      <p class="mono" style="font-size:11px;color:var(--mute)"><a href="shop.html">ONLINE SHOP</a> / ${p.gate ? 'GATE ' + p.gate : esc(p.code)}</p>
+      <p class="mono" style="font-size:11px;color:var(--mute)"><a href="shop.html">ONLINE SHOP</a> / <a href="shop.html?cat=${p.cat}">${catLabel}</a></p>
       <h1>${esc(p.name)}</h1><p class="jp">${esc(p.jp)}｜${esc(p.unit)}</p>
       <p class="lead">${esc(p.lead)}</p><p class="desc">${esc(p.desc)}</p>
       <div class="tags">${(p.tags || []).map(t => `<span>${esc(t)}</span>`).join('')}</div>
-      <span class="price">${yen(p.price)}<small>税込${p.provisional ? '（仮の価格）' : ''}</small></span>
+      <span class="price">${yen(p.price)}<small>税込</small></span>
+      ${opts.length ? `<label class="fld" style="margin:0 0 14px"><span>種類を選ぶ</span><select id="opt">${opts.map(o => `<option>${esc(o)}</option>`).join('')}</select></label>` : ''}
       <div class="buy">
         <div class="qty"><button data-q="-1" aria-label="減らす">−</button><span id="q">1</span><button data-q="1" aria-label="増やす">＋</button></div>
-        <button class="btn" id="addBtn" data-add="${p.id}" data-qty="1" ${p.soon ? 'disabled' : ''}>${p.soon ? '準備中です' : 'カートに入れる'} <span class="arr">→</span></button>
+        <button class="btn" id="addBtn" data-add="${p.id}" data-qty="1" data-opt="${esc(opts[0] || '')}" ${p.soon ? 'disabled' : ''}>${p.soon ? '準備中です' : 'カートに入れる'} <span class="arr">→</span></button>
       </div>
-      <dl class="spec">${p.spec.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
-      ${p.cat === 'dripbag' ? `<div class="oem-hook"><div><b>この味を、あなたの店の名前で。</b><span>ドリップバッグのOEM製造を${OEM.lots[0].qty}袋から承ります。</span></div><a class="btn light sm" href="oem-order.html">OEMの見積へ <span class="arr">→</span></a></div>` : ''}
+      ${(p.spec || []).length ? `<dl class="spec">${p.spec.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
+      ${['coffee', 'gift'].includes(p.cat) ? `<div class="oem-hook"><div><b>この味を、あなたの店の名前で。</b><span>ドリップバッグのOEM製造を${OEM.lots[0].qty}袋から承ります。</span></div><a class="btn light sm" href="oem-order.html">OEMの見積へ <span class="arr">→</span></a></div>` : ''}
     </div>`;
   $('#pd').addEventListener('click', e => {
     const b = e.target.closest('[data-q]'); if (!b) return;
     q = Math.max(1, Math.min(99, q + Number(b.dataset.q)));
     $('#q').textContent = q; $('#addBtn').dataset.qty = q;
   });
-  $('#related').innerHTML = PRODUCTS.filter(x => x.id !== p.id && !x.soon).slice(0, 4).map(cardHTML).join('');
+  $('#pd').addEventListener('change', e => { if (e.target.id === 'opt') $('#addBtn').dataset.opt = e.target.value; });
+  $('#related').innerHTML = SHOP.filter(x => x.id !== p.id && !x.soon && x.cat === p.cat).concat(SHOP.filter(x => x.cat !== p.cat && !x.soon)).slice(0, 4).map(cardHTML).join('');
 }
 
 if (page === 'cart') {
@@ -231,11 +256,11 @@ if (page === 'cart') {
     }
     const t = cart.totals();
     $('#cartList').innerHTML = items.map(i => {
-      const p = PRODUCTS.find(x => x.id === i.id);
+      const p = findP(i.id), k = esc(keyOf(i));
       return `<div class="ci"><a class="ci-img" href="product.html?id=${p.id}">${visual(p)}</a>
-        <div><h3>${esc(p.name)}</h3><p class="jp">${esc(p.unit)}｜${yen(p.price)}</p></div>
-        <div class="ci-r"><div class="qty sm"><button data-id="${p.id}" data-d="-1" aria-label="減らす">−</button><span>${i.qty}</span><button data-id="${p.id}" data-d="1" aria-label="増やす">＋</button></div>
-          <span class="price" style="font-size:22px">${yen(p.price * i.qty)}</span><button class="rm" data-id="${p.id}" data-d="x">削除</button></div></div>`;
+        <div><h3>${esc(p.name)}</h3><p class="jp">${i.opt ? esc(i.opt) + '｜' : ''}${esc(p.unit)}｜${yen(p.price)}</p></div>
+        <div class="ci-r"><div class="qty sm"><button data-id="${k}" data-d="-1" aria-label="減らす">−</button><span>${i.qty}</span><button data-id="${k}" data-d="1" aria-label="増やす">＋</button></div>
+          <span class="price" style="font-size:22px">${yen(p.price * i.qty)}</span><button class="rm" data-id="${k}" data-d="x">削除</button></div></div>`;
     }).join('');
     $('#sumBox').innerHTML = `
       <div><dt>小計</dt><dd>${yen(t.sub)}</dd></div>
@@ -245,7 +270,7 @@ if (page === 'cart') {
   };
   $('#cartList').addEventListener('click', e => {
     const b = e.target.closest('[data-d]'); if (!b) return;
-    const cur = cart.items().find(i => i.id === b.dataset.id);
+    const cur = cart.items().find(i => keyOf(i) === b.dataset.id);
     cart.setQty(b.dataset.id, b.dataset.d === 'x' ? 0 : Math.min(99, cur.qty + Number(b.dataset.d)));
     draw();
   });
@@ -254,7 +279,7 @@ if (page === 'cart') {
     const f = Object.fromEntries(new FormData(e.target));
     const btn = $('#orderBtn'); btn.disabled = true;
     try {
-      const r = await submitData('order', { customer: f, items: cart.items(), totals: cart.totals() });
+      const r = await submitData('order', { customer: f, items: cart.items().map(i => ({ ...i, name: findP(i.id).jp, price: findP(i.id).price })), totals: cart.totals() });
       cart.save([]);
       $('main').innerHTML = doneHTML({ ...r, title: 'Thank you', msg: 'ご注文を受け付けました。確認のご連絡をお送りします。<br>コーヒーの旅を、どうぞお楽しみください。', back: 'shop.html', backLabel: 'ショップへ戻る' });
       scrollTo(0, 0);
